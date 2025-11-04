@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable prefer-const */
 "use client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -13,11 +15,16 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Form, FormField, FormItem, FormMessage } from "@/components/ui/form";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useEffect, useRef, useState } from "react";
-import { useAccountProfile } from "@/queries/useAccount";
+import { useAccountMe, useUpdateMeMutation } from "@/queries/useAccount";
+import { useUploadMediaMutation } from "@/queries/useMedia";
+import { toast } from "sonner";
+import { handleErrorApi } from "@/lib/utils";
 
 export default function UpdateProfileForm() {
   const [file, setFile] = useState<File | null>(null);
   const avatarInputRef = useRef<HTMLInputElement>(null);
+  const updateMeMutation = useUpdateMeMutation();
+  const uploadMediaMutation = useUploadMediaMutation();
   const form = useForm<UpdateMeBodyType>({
     resolver: zodResolver(UpdateMeBody),
     defaultValues: {
@@ -26,32 +33,60 @@ export default function UpdateProfileForm() {
     },
   });
 
-  const {data} = useAccountProfile()
+  const { data, refetch } = useAccountMe();
   useEffect(() => {
-    if(data) {
-      const {name, avatar} = data.payload.data
+    if (data) {
+      const { name, avatar } = data.payload.data;
       form.reset({
         name,
         avatar: avatar ?? "",
-      })
+      });
     }
-  }, [data])
-  
+  }, [data]);
+
   // eslint-disable-next-line react-hooks/incompatible-library
   const name = form.watch("name");
   const avatar = form.watch("avatar");
-  const previewAvatar = () => {
-    if (file) {
-      return URL.createObjectURL(file);
+  const previewAvatar = file ? () => URL.createObjectURL(file) : () => avatar;
+  const reset = () => {
+    form.reset();
+    setFile(null);
+  };
+  const onSubmit = async (values: UpdateMeBodyType) => {
+    if (updateMeMutation.isPending) return;
+    try {
+      let body = values;
+      if (file) {
+        const formData = new FormData();
+        formData.append("file", file);
+        const uploadImageResult = await uploadMediaMutation.mutateAsync(
+          formData
+        );
+        const imageUrl = uploadImageResult.payload.data;
+        body = {
+          ...values,
+          avatar: imageUrl,
+        };
+      }
+      const result = await updateMeMutation.mutateAsync(body);
+      toast.success(result.payload.message);
+      refetch();
+    } catch (error: any) {
+      handleErrorApi({
+        error,
+        setError: form.setError,
+      })
     }
-    return avatar
-  }
+  };
 
   return (
     <Form {...form}>
       <form
         noValidate
         className="grid auto-rows-max items-start gap-4 md:gap-8"
+        onSubmit={form.handleSubmit(onSubmit, (e) => {
+          console.log(e)
+        })}
       >
         <Card x-chunk="dashboard-07-chunk-0">
           <CardHeader>
@@ -79,8 +114,10 @@ export default function UpdateProfileForm() {
                         onChange={(e) => {
                           const file = e.target.files?.[0];
                           if (file) {
-                            setFile(file)
-                        }}}
+                            setFile(file);
+                            field.onChange('http://localhost:3000/' + file.name);
+                          }
+                        }}
                       />
                       <button
                         className="flex aspect-square w-[100px] items-center justify-center rounded-md border border-dashed"
@@ -115,7 +152,12 @@ export default function UpdateProfileForm() {
               />
 
               <div className=" items-center gap-2 md:ml-auto flex">
-                <Button variant="outline" size="sm" type="reset">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  type="reset"
+                  onClick={reset}
+                >
                   Hủy
                 </Button>
                 <Button size="sm" type="submit">
