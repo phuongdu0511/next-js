@@ -43,6 +43,7 @@ import {
 } from '@/components/ui/alert-dialog'
 import { useSearchParams } from 'next/navigation'
 import AutoPagination from '@/components/auto-pagination'
+import { useGetAccountList } from '@/queries/useAccount'
 
 type AccountItem = AccountListResType['data'][0]
 
@@ -59,6 +60,11 @@ const AccountTableContext = createContext<{
 })
 
 export const columns: ColumnDef<AccountType>[] = [
+  {
+    id: 'stt', header: 'STT', cell: ({ row }) => {
+      return <div>{row.index + 1}</div>
+    }
+  },
   {
     accessorKey: 'id',
     header: 'ID'
@@ -89,8 +95,7 @@ export const columns: ColumnDef<AccountType>[] = [
           <CaretSortIcon className='ml-2 h-4 w-4' />
         </Button>
       )
-    },
-    cell: ({ row }) => <div className='lowercase'>{row.getValue('email')}</div>
+    }
   },
   {
     id: 'actions',
@@ -165,8 +170,9 @@ export default function AccountTable() {
   // const params = Object.fromEntries(searchParam.entries())
   const [employeeIdEdit, setEmployeeIdEdit] = useState<number | undefined>()
   const [employeeDelete, setEmployeeDelete] = useState<AccountItem | null>(null)
+  const accountListQuery = useGetAccountList()
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const data: any[] = []
+  const data = accountListQuery.data?.payload.data ?? []
   const [sorting, setSorting] = useState<SortingState>([])
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})

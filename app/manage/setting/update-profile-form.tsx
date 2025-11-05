@@ -42,7 +42,7 @@ export default function UpdateProfileForm() {
         avatar: avatar ?? undefined,
       });
     }
-  }, [data]);
+  }, [form ,data]);
 
   // eslint-disable-next-line react-hooks/incompatible-library
   const name = form.watch("name");
