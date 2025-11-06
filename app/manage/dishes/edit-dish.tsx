@@ -40,6 +40,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useUploadMediaMutation } from "@/queries/useMedia";
 import { useGetDishQuery, useUpdateDishMutation } from "@/queries/useDish";
 import { toast } from "sonner";
+import revalidateApiRequest from "@/apiRequests/revalidate";
 
 export default function EditDish({
   id,
@@ -115,6 +116,7 @@ export default function EditDish({
         };
       }
       const result = await updateDishMutation.mutateAsync(body);
+      await revalidateApiRequest('dishes')
       toast.success(result.payload.message);
       reset();
       onSubmitSuccess && onSubmitSuccess();

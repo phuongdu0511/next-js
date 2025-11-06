@@ -1,12 +1,19 @@
 import http from "@/lib/http";
-import { CreateDishBodyType, DishListResType, DishResType, UpdateDishBodyType } from "@/schemaValidations/dish.schema";
+import {
+  CreateDishBodyType,
+  DishListResType,
+  DishResType,
+  UpdateDishBodyType,
+} from "@/schemaValidations/dish.schema";
 
-const prefix = 'dishes';
+const prefix = "dishes";
 const dishApiRequests = {
-    list: () => http.get<DishListResType>(`${prefix}`),
-    add: (body: CreateDishBodyType) => http.post<DishResType>(`${prefix}`, body),
-    getDish: (id: number) => http.get<DishResType>(`${prefix}/${id}`),
-    updateDish: (id: number, body: UpdateDishBodyType) => http.put<DishResType>(`${prefix}/${id}`, body),
-    deleteDish: (id: number) => http.delete<DishResType>(`${prefix}/${id}`),
+  list: () =>
+    http.get<DishListResType>(`${prefix}`, { next: { tags: ["dishes"] } }),
+  add: (body: CreateDishBodyType) => http.post<DishResType>(`${prefix}`, body),
+  getDish: (id: number) => http.get<DishResType>(`${prefix}/${id}`),
+  updateDish: (id: number, body: UpdateDishBodyType) =>
+    http.put<DishResType>(`${prefix}/${id}`, body),
+  deleteDish: (id: number) => http.delete<DishResType>(`${prefix}/${id}`),
 };
 export default dishApiRequests;
