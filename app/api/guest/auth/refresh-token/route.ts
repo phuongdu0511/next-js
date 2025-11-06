@@ -1,6 +1,6 @@
-import authApiRequest from "@/apiRequests/auth";
 import { cookies } from "next/headers";
 import jwt from "jsonwebtoken";
+import guestApiRequest from "@/apiRequests/guest";
 export async function POST(request: Request) {
   const cookieStore = await cookies();
   const refreshToken = cookieStore.get("refreshToken")?.value;
@@ -15,7 +15,7 @@ export async function POST(request: Request) {
     );
   }
   try {
-    const { payload } = await authApiRequest.sRefreshToken({ refreshToken });
+    const { payload } = await guestApiRequest.sRefreshToken({ refreshToken });
 
     const decodedAccessToken = jwt.decode(payload.data.accessToken) as {
       exp: number;
