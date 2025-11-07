@@ -26,6 +26,11 @@ const menuItems: {
     role: [Role.Guest],
   },
   {
+    title: "Đơn hàng",
+    href: "/guest/orders",
+    role: [Role.Guest],
+  },
+  {
     title: "Đăng nhập",
     href: "/login",
     hideWhenLogin: true,
@@ -40,10 +45,10 @@ const menuItems: {
 export default function NavItems({ className }: { className?: string }) {
   const { role, setRole } = useAppContext();
   const authLogoutMutation = useLogoutMutation();
-  const guestLogout = useGuestLogoutMutation()
+  const guestLogout = useGuestLogoutMutation();
   const router = useRouter();
 
-  const logoutMutation = role !== Role.Guest ? authLogoutMutation : guestLogout
+  const logoutMutation = role !== Role.Guest ? authLogoutMutation : guestLogout;
 
   const logout = async () => {
     if (logoutMutation.isPending) return;
