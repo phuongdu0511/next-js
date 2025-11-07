@@ -5,6 +5,7 @@ import { useAppContext } from "@/components/app-provider";
 import { Role } from "@/constants/type";
 import { cn, handleErrorApi } from "@/lib/utils";
 import { useLogoutMutation } from "@/queries/useAuth";
+import { useGuestLogoutMutation } from "@/queries/useGuest";
 import { RoleType } from "@/types/jwt.types";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -38,8 +39,11 @@ const menuItems: {
 
 export default function NavItems({ className }: { className?: string }) {
   const { role, setRole } = useAppContext();
-  const logoutMutation = useLogoutMutation();
+  const authLogoutMutation = useLogoutMutation();
+  const guestLogout = useGuestLogoutMutation()
   const router = useRouter();
+
+  const logoutMutation = role !== Role.Guest ? authLogoutMutation : guestLogout
 
   const logout = async () => {
     if (logoutMutation.isPending) return;
