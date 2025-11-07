@@ -4,7 +4,7 @@ import { decodeToken } from "./lib/utils";
 import { Role } from "./constants/type";
 
 const managePaths = ["/manage"];
-const guestPaths = ["/manage"];
+const guestPaths = ["/guest"];
 const privatePaths = [...managePaths, ...guestPaths];
 const unAuthPaths = ["/login"];
 
@@ -36,7 +36,6 @@ export function proxy(request: NextRequest) {
       url.searchParams.set("redirect", pathname);
       return NextResponse.redirect(url);
     }
-
     // 2.3 Vào không đúng role, redirect về trang chủ
     const role = decodeToken(refreshToken).role;
     // Guest nhưng cố vào route owner
@@ -45,14 +44,14 @@ export function proxy(request: NextRequest) {
     // Không phải Guest nhưng cố vào route guest
     const isNotGuestGoToGuestPath = (role !== Role.Guest &&
         guestPaths.some((path) => pathname.startsWith(path)))
-    if (isGuestGoToManagePath || isNotGuestGoToGuestPath)
+    if (isGuestGoToManagePath || isNotGuestGoToGuestPath) {
       return NextResponse.redirect(new URL("/", request.url));
+    }
   }
-
   return NextResponse.next();
 }
 
 // See "Matching Paths" below to learn more
 export const config = {
-  matcher: ["/manage/:path*",'/guest/:path*' ,"/login"],
+  matcher: ["/manage/:path*","/guest/:path*" ,"/login"],
 };
