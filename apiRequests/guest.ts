@@ -4,14 +4,21 @@ import {
   RefreshTokenBodyType,
   RefreshTokenResType,
 } from "@/schemaValidations/auth.schema";
-import { GuestLoginBodyType, GuestLoginResType } from "@/schemaValidations/guest.schema";
+import {
+  GuestCreateOrdersBodyType,
+  GuestCreateOrdersResType,
+  GuestGetOrdersResType,
+  GuestLoginBodyType,
+  GuestLoginResType,
+} from "@/schemaValidations/guest.schema";
 
 const guestApiRequest = {
   refreshTokenRequest: null as Promise<{
     status: number;
     payload: RefreshTokenResType;
   }> | null,
-  sLogin: (body: GuestLoginBodyType) => http.post<GuestLoginResType>("/guest/auth/login", body),
+  sLogin: (body: GuestLoginBodyType) =>
+    http.post<GuestLoginResType>("/guest/auth/login", body),
   login: (body: GuestLoginBodyType) =>
     http.post<GuestLoginResType>("/api/guest/auth/login", body, {
       baseUrl: "",
@@ -54,6 +61,9 @@ const guestApiRequest = {
     this.refreshTokenRequest = null;
     return result;
   },
+  order: (body: GuestCreateOrdersBodyType) =>
+    http.post<GuestCreateOrdersResType>("/guest/orders", body),
+  getOrdersList: () => http.get<GuestGetOrdersResType>("/guest/orders"),
 };
 
 export default guestApiRequest;
