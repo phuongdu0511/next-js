@@ -4,8 +4,10 @@ import { Badge } from "@/components/ui/badge";
 import socket from "@/lib/socket";
 import { formatCurrency, getVietnameseOrderStatus } from "@/lib/utils";
 import { useGuestGetOrderListQuery } from "@/queries/useGuest";
+import { UpdateOrderResType } from "@/schemaValidations/order.schema";
 import Image from "next/image";
 import { useEffect } from "react";
+import { toast } from "sonner";
 
 export default function OrdersCart() {
   const { data, refetch } = useGuestGetOrderListQuery();
@@ -16,23 +18,32 @@ export default function OrdersCart() {
     }, 0);
   };
   useEffect(() => {
-    if(socket.connected) {
+    if (socket.connected) {
       onConnect();
     }
 
     function onConnect() {
-      console.log(socket.id)
+      console.log('connected');
     }
 
     function onDisconnect() {
-      console.log("disconnect")
+      console.log("disconnect");
     }
 
-    function onUpdateOrder() {
-      refetch()
+    function onUpdateOrder(data: UpdateOrderResType["data"]) {
+      const {
+        dishSnapshot: { name },
+        quantity,
+      } = data;
+      toast.success(
+        `Món ${name} (SL: ${quantity}) vừa được cập nhật sang trạng thái ${getVietnameseOrderStatus(
+          data.status
+        )}`
+      );
+      refetch();
     }
 
-    socket.on('update-order', onUpdateOrder)
+    socket.on("update-order", onUpdateOrder);
 
     socket.on("connect", onConnect);
     socket.on("disconnect", onDisconnect);
