@@ -6,9 +6,10 @@ import { EntityError } from "@/lib/http";
 import { toast } from "sonner";
 import jwt from "jsonwebtoken";
 import authApiRequest from "@/apiRequests/auth";
-import { DishStatus, OrderStatus, TableStatus } from "@/constants/type";
+import { DishStatus, OrderStatus, Role, TableStatus } from "@/constants/type";
 import envConfig from "@/config";
 import { TokenPayload } from "@/types/jwt.types";
+import guestApiRequest from "@/apiRequests/guest";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -72,8 +73,8 @@ export const checkAndRefreshToken = async (param?: {
   const refreshToken = getRefreshTokenFromLocalStorage();
   // Chưa đăng nhập thì cũng không cho chạy
   if (!accessToken || !refreshToken) return;
-  const decodedAccessToken = decodeToken(accessToken)
-  const decodedRefreshToken = decodeToken(refreshToken)
+  const decodedAccessToken = decodeToken(accessToken);
+  const decodedRefreshToken = decodeToken(refreshToken);
   // Thời điểm hết hạn của token là tính theo epoch time (s)
   // Còn khi các bạn dùng cú pháp new Date().getTime() thì nó sẽ trả về epoch time (ms)
   const now = new Date().getTime() / 1000 - 1;
@@ -89,7 +90,11 @@ export const checkAndRefreshToken = async (param?: {
   ) {
     // Gọi API refresh token
     try {
-      const res = await authApiRequest.refreshToken();
+      const role = decodedRefreshToken.role;
+      const res =
+        role === Role.Guest
+          ? await guestApiRequest.refreshToken()
+          : await authApiRequest.refreshToken();
       setAccessTokenToLocalStorage(res.payload.data.accessToken);
       setRefreshTokenToLocalStorage(res.payload.data.refreshToken);
       param?.onSuccess && param.onSuccess();
@@ -162,5 +167,5 @@ export const getTableLink = ({
 };
 
 export const decodeToken = (token: string) => {
-  return jwt.decode(token) as TokenPayload
-}
+  return jwt.decode(token) as TokenPayload;
+};
