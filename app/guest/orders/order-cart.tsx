@@ -53,7 +53,7 @@ export default function OrdersCart() {
       socket.off("disconnect", onDisconnect);
       socket.off("update-order", onUpdateOrder);
     };
-  }, []);
+  }, [refetch]);
   return (
     <>
       {orders.map((order, index) => (
