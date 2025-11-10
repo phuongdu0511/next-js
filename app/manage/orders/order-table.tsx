@@ -20,7 +20,11 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { GetOrdersResType, UpdateOrderResType } from "@/schemaValidations/order.schema";
+import {
+  GetOrdersResType,
+  PayGuestOrdersResType,
+  UpdateOrderResType,
+} from "@/schemaValidations/order.schema";
 import AddOrder from "@/app/manage/orders/add-order";
 import EditOrder from "@/app/manage/orders/edit-order";
 import { createContext, useEffect, useState } from "react";
@@ -47,7 +51,10 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { endOfDay, format, startOfDay } from "date-fns";
-import { useGetOrderListQuery, useUpdateOrderMutation } from "@/queries/useOrder";
+import {
+  useGetOrderListQuery,
+  useUpdateOrderMutation,
+} from "@/queries/useOrder";
 import { useGetTableListQuery } from "@/queries/useTable";
 import TableSkeleton from "./table-skeleton";
 import { toast } from "sonner";
@@ -92,7 +99,7 @@ export default function OrderTable() {
     fromDate,
     toDate,
   });
-  const refetchOrderList = orderListQuery.refetch
+  const refetchOrderList = orderListQuery.refetch;
   const orderList = orderListQuery.data?.payload.data ?? [];
   const tableListQuery = useGetTableListQuery();
   const tableList = tableListQuery.data?.payload.data ?? [];
@@ -120,11 +127,11 @@ export default function OrderTable() {
     quantity: number;
   }) => {
     try {
-      await updateOrderMutation.mutateAsync(body)
+      await updateOrderMutation.mutateAsync(body);
     } catch (error) {
       handleErrorApi({
-        error
-      })
+        error,
+      });
     }
   };
 
@@ -168,7 +175,7 @@ export default function OrderTable() {
     }
 
     function onConnect() {
-      console.log('connected');
+      console.log("connected");
     }
 
     function onDisconnect() {
@@ -176,9 +183,9 @@ export default function OrderTable() {
     }
 
     function refetch() {
-      const now = new Date()
-      if (now >= fromDate && now <= toDate){
-        refetchOrderList()
+      const now = new Date();
+      if (now >= fromDate && now <= toDate) {
+        refetchOrderList();
       }
     }
 
@@ -195,27 +202,34 @@ export default function OrderTable() {
       refetch();
     }
 
-    function onNewOrder(data: GuestCreateOrdersResType['data']) {
-      const {
-        guest
-      } = data[0];
+    function onNewOrder(data: GuestCreateOrdersResType["data"]) {
+      const { guest } = data[0];
       toast.success(
         `${guest?.name} tại bàn ${guest?.tableNumber} vừa đặt ${data.length} đơn`
       );
-      refetch()
+      refetch();
+    }
+
+    function onPayment(data: PayGuestOrdersResType["data"]) {
+      const { guest } = data[0];
+      toast.success(
+        `${guest?.name} tại bàn ${guest?.tableNumber} thanh toán thành công ${data.length} đơn`
+      );
+      refetch();
     }
 
     socket.on("update-order", onUpdateOrder);
     socket.on("new-order", onNewOrder);
-
     socket.on("connect", onConnect);
     socket.on("disconnect", onDisconnect);
+    socket.on("payment", onPayment);
 
     return () => {
       socket.off("connect", onConnect);
       socket.off("disconnect", onDisconnect);
       socket.off("update-order", onUpdateOrder);
       socket.off("new-order", onUpdateOrder);
+      socket.off("payment-order", onPayment);
     };
   }, [refetchOrderList, fromDate, toDate]);
 
