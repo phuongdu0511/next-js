@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 import { Badge } from "@/components/ui/badge";
+import { OrderStatus } from "@/constants/type";
 import socket from "@/lib/socket";
 import { formatCurrency, getVietnameseOrderStatus } from "@/lib/utils";
 import { useGuestGetOrderListQuery } from "@/queries/useGuest";
@@ -12,18 +13,54 @@ import { toast } from "sonner";
 export default function OrdersCart() {
   const { data, refetch } = useGuestGetOrderListQuery();
   const orders = data?.payload.data ?? [];
-  const totalPrice = () => {
-    return orders.reduce((result, order) => {
-      return result + order.dishSnapshot.price * order.quantity;
-    }, 0);
-  };
+  const { waitingForPaying, paid } = orders.reduce(
+    (result, order) => {
+      if (
+        order.status === OrderStatus.Delivered ||
+        order.status === OrderStatus.Processing ||
+        order.status === OrderStatus.Pending
+      ) {
+        return {
+          ...result,
+          waitingForPaying: {
+            price:
+              result.waitingForPaying.price +
+              order.dishSnapshot.price * order.quantity,
+            quantity: result.waitingForPaying.quantity + order.quantity,
+          },
+        };
+      }
+      if (order.status === OrderStatus.Paid) {
+        return {
+          ...result,
+          paid: {
+            price:
+              result.paid.price + order.dishSnapshot.price * order.quantity,
+            quantity: result.paid.quantity + order.quantity,
+          },
+        };
+      }
+      return result;
+    },
+    {
+      waitingForPaying: {
+        price: 0,
+        quantity: 0,
+      },
+      paid: {
+        price: 0,
+        quantity: 0,
+      },
+    }
+  );
+
   useEffect(() => {
     if (socket.connected) {
       onConnect();
     }
 
     function onConnect() {
-      console.log('connected');
+      console.log("connected");
     }
 
     function onDisconnect() {
@@ -84,12 +121,22 @@ export default function OrdersCart() {
           </div>
         </div>
       ))}
-      <div className="sticky bottom-0">
-        <div className="w-full flex space-x-3 text-xl semibold">
-          <span>Tổng cộng · {orders.length} món</span>
-          <span>{formatCurrency(totalPrice())}</span>
+      {paid.quantity !== 0 && (
+        <div className="sticky bottom-0">
+          <div className="w-full flex space-x-3 text-xl semibold">
+            <span>Đơn đã thanh toán · {paid.quantity} món</span>
+            <span>{formatCurrency(paid.price)}</span>
+          </div>
         </div>
-      </div>
+      )}
+      {waitingForPaying.quantity !== 0 && (
+        <div className="sticky bottom-0">
+          <div className="w-full flex space-x-3 text-xl semibold">
+            <span>Đơn chưa thanh toán · {waitingForPaying.quantity} món</span>
+            <span>{formatCurrency(waitingForPaying.price)}</span>
+          </div>
+        </div>
+      )}
     </>
   );
 }

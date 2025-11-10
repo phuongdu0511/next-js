@@ -11,11 +11,13 @@ import {
 } from "@/lib/utils";
 import { RoleType } from "@/types/jwt.types";
 
+// default
+// staleTime: 0, sau khoảng thời gian sẽ fetch lại
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       refetchOnWindowFocus: false,
-      refetchOnMount: false,
     },
   },
 });
