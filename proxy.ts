@@ -5,6 +5,7 @@ import { Role } from "./constants/type";
 
 const managePaths = ["/manage"];
 const guestPaths = ["/guest"];
+const onlyOwnerPaths = ["/manage/account"];
 const privatePaths = [...managePaths, ...guestPaths];
 const unAuthPaths = ["/login"];
 
@@ -39,12 +40,23 @@ export function proxy(request: NextRequest) {
     // 2.3 Vào không đúng role, redirect về trang chủ
     const role = decodeToken(refreshToken).role;
     // Guest nhưng cố vào route owner
-    const isGuestGoToManagePath = (role === Role.Guest &&
-        managePaths.some((path) => pathname.startsWith(path)))
+    const isGuestGoToManagePath =
+      role === Role.Guest &&
+      managePaths.some((path) => pathname.startsWith(path));
     // Không phải Guest nhưng cố vào route guest
-    const isNotGuestGoToGuestPath = (role !== Role.Guest &&
-        guestPaths.some((path) => pathname.startsWith(path)))
-    if (isGuestGoToManagePath || isNotGuestGoToGuestPath) {
+    const isNotGuestGoToGuestPath =
+      role !== Role.Guest &&
+      guestPaths.some((path) => pathname.startsWith(path));
+
+    // Khôn phải Owner nhưng có tình truy cập vào các route dành cho Owner
+    const iNotOwnerGotoOnwerPath =
+      role !== Role.Owner &&
+      onlyOwnerPaths.some((path) => pathname.startsWith(path));
+    if (
+      isGuestGoToManagePath ||
+      isNotGuestGoToGuestPath ||
+      iNotOwnerGotoOnwerPath
+    ) {
       return NextResponse.redirect(new URL("/", request.url));
     }
   }
@@ -53,5 +65,5 @@ export function proxy(request: NextRequest) {
 
 // See "Matching Paths" below to learn more
 export const config = {
-  matcher: ["/manage/:path*","/guest/:path*" ,"/login"],
+  matcher: ["/manage/:path*", "/guest/:path*", "/login"],
 };
