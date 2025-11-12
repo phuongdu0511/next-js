@@ -70,6 +70,7 @@ export const removeTokensFromLocalStorage = () => {
 export const checkAndRefreshToken = async (param?: {
   onError?: () => void;
   onSuccess?: () => void;
+  force?: boolean;
 }) => {
   const accessToken = getAccessTokenFromLocalStorage();
   const refreshToken = getRefreshTokenFromLocalStorage();
@@ -87,8 +88,9 @@ export const checkAndRefreshToken = async (param?: {
   }
 
   if (
+    param?.force ||
     decodedAccessToken.exp - now <
-    (decodedAccessToken.exp - decodedAccessToken.iat) / 3
+      (decodedAccessToken.exp - decodedAccessToken.iat) / 3
   ) {
     // Gọi API refresh token
     try {
@@ -173,29 +175,34 @@ export const decodeToken = (token: string) => {
 };
 
 export const simpleMatchText = (fullText: string, matchText: string) => {
-  return removeAccents(fullText.toLowerCase()).includes(removeAccents(matchText.trim().toLowerCase()))
-}
+  return removeAccents(fullText.toLowerCase()).includes(
+    removeAccents(matchText.trim().toLowerCase())
+  );
+};
 
 export function removeAccents(str: string) {
   return str
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .replace(/đ/g, 'd')
-    .replace(/Đ/g, 'D')
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/đ/g, "d")
+    .replace(/Đ/g, "D");
 }
 
 export const formatDateTimeToLocaleString = (date: string | Date) => {
-  return format(date instanceof Date ? date : new Date(date), 'HH:mm:ss dd/MM/yyyy')
-}
+  return format(
+    date instanceof Date ? date : new Date(date),
+    "HH:mm:ss dd/MM/yyyy"
+  );
+};
 
 export const formatDateTimeToTimeString = (date: string | Date) => {
-  return format(date instanceof Date ? date : new Date(date), 'HH:mm:ss')
-}
+  return format(date instanceof Date ? date : new Date(date), "HH:mm:ss");
+};
 
 export const OrderStatusIcon = {
   [OrderStatus.Pending]: Loader,
   [OrderStatus.Processing]: CookingPot,
   [OrderStatus.Rejected]: BookX,
   [OrderStatus.Delivered]: Truck,
-  [OrderStatus.Paid]: HandCoins
-}
+  [OrderStatus.Paid]: HandCoins,
+};
