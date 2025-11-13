@@ -12,6 +12,7 @@ import {
 } from "@/lib/utils";
 import { RoleType } from "@/types/jwt.types";
 import { Socket } from "socket.io-client";
+import ListenLogoutSocket from "./listen-logout-socket";
 
 // default
 // staleTime: 0, sau khoảng thời gian sẽ fetch lại
@@ -75,6 +76,7 @@ export default function AppProvider({
       <QueryClientProvider client={queryClient}>
         {children}
         <RefreshToken />
+        <ListenLogoutSocket />
         <ReactQueryDevtools initialIsOpen={false} />
       </QueryClientProvider>
     </AppContext>
