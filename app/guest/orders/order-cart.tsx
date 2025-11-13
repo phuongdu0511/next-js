@@ -1,11 +1,14 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
-import { useAppContext } from "@/components/app-provider";
+import { useAppStore } from "@/components/app-provider";
 import { Badge } from "@/components/ui/badge";
 import { OrderStatus } from "@/constants/type";
 import { formatCurrency, getVietnameseOrderStatus } from "@/lib/utils";
 import { useGuestGetOrderListQuery } from "@/queries/useGuest";
-import { PayGuestOrdersResType, UpdateOrderResType } from "@/schemaValidations/order.schema";
+import {
+  PayGuestOrdersResType,
+  UpdateOrderResType,
+} from "@/schemaValidations/order.schema";
 import Image from "next/image";
 import { useEffect } from "react";
 import { toast } from "sonner";
@@ -13,7 +16,7 @@ import { toast } from "sonner";
 export default function OrdersCart() {
   const { data, refetch } = useGuestGetOrderListQuery();
   const orders = data?.payload.data ?? [];
-  const { socket } = useAppContext();
+  const socket = useAppStore((state) => state.socket);
   const { waitingForPaying, paid } = orders.reduce(
     (result, order) => {
       if (
