@@ -54,7 +54,7 @@ const menuItems: {
 ];
 
 export default function NavItems({ className }: { className?: string }) {
-  const { role, setRole } = useAppContext();
+  const { role, setRole, disconnectSocket } = useAppContext();
   const authLogoutMutation = useLogoutMutation();
   const guestLogout = useGuestLogoutMutation();
   const router = useRouter();
@@ -66,6 +66,7 @@ export default function NavItems({ className }: { className?: string }) {
     try {
       await logoutMutation.mutateAsync();
       setRole();
+      disconnectSocket()
       router.push("/");
     } catch (error) {
       handleErrorApi({ error });
@@ -93,9 +94,7 @@ export default function NavItems({ className }: { className?: string }) {
       {role && (
         <AlertDialog>
           <AlertDialogTrigger asChild>
-            <div className={cn(className, "cursor-pointer")}>
-              Đăng xuất
-            </div>
+            <div className={cn(className, "cursor-pointer")}>Đăng xuất</div>
           </AlertDialogTrigger>
           <AlertDialogContent>
             <AlertDialogHeader>
