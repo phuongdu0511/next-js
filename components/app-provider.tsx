@@ -70,21 +70,22 @@ export default function AppProvider({
 }: {
   children: React.ReactNode;
 }) {
-  const [socket, setSocket] = useState<Socket | undefined>();
-  const [role, setRoleState] = useState<RoleType | undefined>();
+  const setRole = useAppStore((state) => state.setRole)
+  const setSocket = useAppStore((state) => state.setSocket)
+  // const [socket, setSocket] = useState<Socket | undefined>();
+  // const [role, setRoleState] = useState<RoleType | undefined>();
   const count = useRef(0);
   useEffect(() => {
     if (count.current === 0) {
       const accessToken = getAccessTokenFromLocalStorage();
       if (accessToken) {
         const role = decodeToken(accessToken).role;
-        // eslint-disable-next-line react-hooks/set-state-in-effect
-        setRoleState(role);
+        setRole(role);
         setSocket(generateSocketInstance(accessToken));
       }
       count.current++;
     }
-  }, []);
+  }, [setRole, setSocket]);
   // const disconnectSocket = () => {
   //   socket?.disconnect();
   //   setSocket(undefined);
